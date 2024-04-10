@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven'
+    }
+    
+    stages {
+        stage('Build') {
+            steps {
+                sh 'mvn -version'
+                sh 'mvn clean'
+                sh 'mvn compile'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        
+        stage('SonarQube analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarQubeScanner'; // Assurez-vous d'avoir configuré SonarQubeScanner dans Jenkins
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+    }
+}
